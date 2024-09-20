@@ -42,6 +42,8 @@ export const categories = sqliteTable('categories', {
     id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull().unique(),
     color: text('color'), // For calendar view
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const subscriptionCategories = sqliteTable('subscription_categories', {
