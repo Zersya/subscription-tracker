@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
     password: text('password').notNull(),
     avatar: text('avatar'),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const subscriptions = sqliteTable('subscriptions', {
@@ -25,6 +26,7 @@ export const subscriptions = sqliteTable('subscriptions', {
     color: text('color'), // For calendar view
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().defaultNow(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const recurringEvents = sqliteTable('recurring_events', {
@@ -56,6 +58,7 @@ export const payments = sqliteTable('payments', {
     paymentDate: integer('payment_date', { mode: 'timestamp' }).notNull(),
     status: text('status').notNull(), // 'success', 'failed', 'pending'
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const notifications = sqliteTable('notifications', {
@@ -66,4 +69,5 @@ export const notifications = sqliteTable('notifications', {
     message: text('message').notNull(),
     isRead: integer('is_read', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
