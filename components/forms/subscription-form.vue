@@ -2,7 +2,7 @@
 import {object, string, number, date, type InferType} from "yup";
 import type {FormSubmitEvent} from "#ui/types";
 import {showErrorToast, showSuccessToast} from "~/utils/functions";
-import type {Subscription} from "~/server/utils/drizzle";
+import type {Subscription, Category} from "~/server/utils/drizzle";
 import type {ResponseData} from "~~/server/utils/handleResponseAPI";
 
 const props = defineProps({
@@ -26,6 +26,7 @@ const schema = object({
   nextBillingDate: date().required('Next billing date is required'),
   status: string().required('Status is required'),
   color: string().nullable(),
+  categoryId: number().nullable(),
 })
 
 type Schema = InferType<typeof schema>
@@ -43,14 +44,25 @@ const state = reactive({
   nextBillingDate: new Date(),
   status: 'active',
   color: null as string | null,
+  categoryId: null as number | null,
   isLoadingSubmit: false
 })
 
-onMounted(() => {
+const categories = ref<Category[]>([])
+
+onMounted(async () => {
   const value = props.subscription
   if(value) {
     Object.assign(state, value)
+    // Fetch the current category for this subscription
+    const subscriptionCategories = await $fetch(`/api/subscriptionCategories/bySubscription/${value.id}`)
+    if (subscriptionCategories.data.length > 0) {
+      state.categoryId = subscriptionCategories.data[0].categoryId
+    }
   }
+  // Fetch all categories
+  const categoriesResponse = await $fetch('/api/categories')
+  categories.value = categoriesResponse.data
 })
 
 async function onSubmitForm(event: FormSubmitEvent<Schema>) {
@@ -170,6 +182,14 @@ async function onSubmitForm(event: FormSubmitEvent<Schema>) {
               v-model="state.color"
               type="color"
           />
+        </u-form-group>
+        <u-form-group label="Category" name="categoryId">
+          <u-select v-model="state.categoryId">
+            <option :value="null">No Category</option>
+            <option v-for="category in categories" :key="category.id" :value="category.id">
+              {{ category.name }}
+            </option>
+          </u-select>
         </u-form-group>
         <div class="flex items-center justify-end mt-4 gap-4">
           <u-button
