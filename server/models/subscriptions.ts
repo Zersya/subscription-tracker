@@ -2,7 +2,30 @@ import {tables, useDrizzle} from "~/server/utils/drizzle";
 import {eq} from "drizzle-orm";
 
 export function getData() {
-    return useDrizzle().select().from(tables.subscriptions).all()
+    return useDrizzle().select({
+        id: tables.subscriptions.id,
+        userId: tables.subscriptions.userId,
+        name: tables.subscriptions.name,
+        description: tables.subscriptions.description,
+        price: tables.subscriptions.price,
+        currency: tables.subscriptions.currency,
+        billingCycle: tables.subscriptions.billingCycle,
+        billingDay: tables.subscriptions.billingDay,
+        startDate: tables.subscriptions.startDate,
+        endDate: tables.subscriptions.endDate,
+        nextBillingDate: tables.subscriptions.nextBillingDate,
+        status: tables.subscriptions.status,
+        color: tables.subscriptions.color,
+        createdAt: tables.subscriptions.createdAt,
+        updatedAt: tables.subscriptions.updatedAt,
+        category: {
+            id: tables.subscriptionCategories.id,
+            subscriptionId: tables.subscriptionCategories.subscriptionId,
+            categoryId: tables.subscriptionCategories.categoryId
+        }
+    }).from(tables.subscriptions)
+        .leftJoin(tables.subscriptionCategories, eq(tables.subscriptionCategories.subscriptionId, tables.subscriptions.id))
+        .all()
 }
 
 export async function createData(userId: number, name: string, description: string | null, price: number, currency: string, billingCycle: string, billingDay: number | null, startDate: Date, endDate: Date | null, nextBillingDate: Date, status: string, color: string | null) {

@@ -184,12 +184,7 @@ async function onSubmitForm(event: FormSubmitEvent<Schema>) {
           />
         </u-form-group>
         <u-form-group label="Category" name="categoryId">
-          <u-select v-model="state.categoryId">
-            <option :value="null">No Category</option>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
-              {{ category.name }}
-            </option>
-          </u-select>
+          <u-select v-model="state.categoryId" :options="categories" value-attribute="id" option-attribute="name"></u-select>
         </u-form-group>
         <div class="flex items-center justify-end mt-4 gap-4">
           <u-button
