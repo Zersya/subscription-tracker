@@ -5,8 +5,9 @@ export function getData() {
     return useDrizzle().select().from(tables.subscriptions).all()
 }
 
-export function createData(userId: number, name: string, description: string | null, price: number, currency: string, billingCycle: string, billingDay: number | null, startDate: Date, endDate: Date | null, nextBillingDate: Date, status: string, color: string | null) {
-    return useDrizzle().insert(tables.subscriptions).values({
+export async function createData(userId: number, name: string, description: string | null, price: number, currency: string, billingCycle: string, billingDay: number | null, startDate: Date, endDate: Date | null, nextBillingDate: Date, status: string, color: string | null) {
+    const db = useDrizzle();
+    const subscription = await db.insert(tables.subscriptions).values({
         userId,
         name,
         description,
@@ -21,7 +22,17 @@ export function createData(userId: number, name: string, description: string | n
         color,
         createdAt: new Date(),
         updatedAt: new Date()
-    }).returning().get()
+    }).returning().get();
+
+    // Create recurring event for the subscription
+    await db.insert(tables.recurringEvents).values({
+        subscriptionId: subscription.id,
+        eventType: 'payment',
+        recurrenceRule: `FREQ=${billingCycle.toUpperCase()};INTERVAL=1`,
+        nextOccurrence: nextBillingDate,
+    }).returning().get();
+
+    return subscription;
 }
 
 export function updateData(id: number, data: Partial<Omit<typeof tables.subscriptions.$inferInsert, 'id' | 'createdAt' | 'deletedAt'>>) {
