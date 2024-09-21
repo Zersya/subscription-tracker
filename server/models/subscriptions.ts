@@ -84,29 +84,31 @@ export async function updateData(id: number, data: Partial<Omit<typeof tables.su
 
     if (data.billingCycle || data.startDate || data.endDate) {
         const subscription = await db.select().from(tables.subscriptions).where(eq(tables.subscriptions.id, id)).get();
-        
-        let recurrenceRule = `FREQ=${subscription.billingCycle.toUpperCase()};INTERVAL=1`;
-        if (subscription.endDate) {
-            const startDateTime = new Date(subscription.startDate).getTime();
-            const endDateTime = new Date(subscription.endDate).getTime();
-            const cycleMilliseconds = {
-                DAILY: 24 * 60 * 60 * 1000,
-                WEEKLY: 7 * 24 * 60 * 60 * 1000,
-                MONTHLY: 30 * 24 * 60 * 60 * 1000, // Approximation
-                YEARLY: 365 * 24 * 60 * 60 * 1000, // Approximation
-            };
-            const cycleDuration = cycleMilliseconds[subscription.billingCycle.toUpperCase() as keyof typeof cycleMilliseconds];
-            const count = Math.ceil((endDateTime - startDateTime) / cycleDuration);
-            recurrenceRule += `;COUNT=${count}`;
-        }
 
-        await db.update(tables.recurringEvents)
-            .set({
-                recurrenceRule,
-                nextOccurrence: subscription.nextBillingDate,
-            })
-            .where(eq(tables.recurringEvents.subscriptionId, id))
-            .execute();
+        if(subscription) {
+            let recurrenceRule = `FREQ=${subscription.billingCycle.toUpperCase()};INTERVAL=1`;
+            if (subscription.endDate) {
+                const startDateTime = new Date(subscription.startDate).getTime();
+                const endDateTime = new Date(subscription.endDate).getTime();
+                const cycleMilliseconds = {
+                    DAILY: 24 * 60 * 60 * 1000,
+                    WEEKLY: 7 * 24 * 60 * 60 * 1000,
+                    MONTHLY: 30 * 24 * 60 * 60 * 1000, // Approximation
+                    YEARLY: 365 * 24 * 60 * 60 * 1000, // Approximation
+                };
+                const cycleDuration = cycleMilliseconds[subscription.billingCycle.toUpperCase() as keyof typeof cycleMilliseconds];
+                const count = Math.ceil((endDateTime - startDateTime) / cycleDuration);
+                recurrenceRule += `;COUNT=${count}`;
+            }
+
+            await db.update(tables.recurringEvents)
+                .set({
+                    recurrenceRule,
+                    nextOccurrence: subscription.nextBillingDate,
+                })
+                .where(eq(tables.recurringEvents.subscriptionId, id))
+                .execute();
+        }
     }
 
     return updatedSubscription;
