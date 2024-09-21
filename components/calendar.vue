@@ -17,6 +17,7 @@ const weekDays: string[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const currentDate = ref<Date>(new Date())
 const selectedMonth = ref<string>(currentDate.value.getMonth().toString())
+const selectedYear = ref<number>(currentDate.value.getFullYear())
 
 const isOpenDialog = ref({
   form: false
@@ -73,11 +74,13 @@ const calendarDays = computed((): CalendarDay[] => {
 const prevMonth = (): void => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
   selectedMonth.value = currentDate.value.getMonth().toString()
+  selectedYear.value = currentDate.value.getFullYear()
 }
 
 const nextMonth = (): void => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
   selectedMonth.value = currentDate.value.getMonth().toString()
+  selectedYear.value = currentDate.value.getFullYear()
 }
 
 const openSubscriptionForm = (subscription?: Subscription) => {
@@ -134,8 +137,8 @@ onMounted(async () => {
   ])
 })
 
-watch(selectedMonth, (newValue: string) => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), parseInt(newValue), 1)
+watch([selectedMonth, selectedYear], ([newMonth, newYear]) => {
+  currentDate.value = new Date(newYear, parseInt(newMonth), 1)
 })
 </script>
 
@@ -145,7 +148,10 @@ watch(selectedMonth, (newValue: string) => {
       <UButton @click="prevMonth">
         <Icon name="lucide:chevron-left"/>
       </UButton>
-      <USelect v-model="selectedMonth" :options="monthOptions"/>
+      <div class="flex items-center space-x-2">
+        <USelect v-model="selectedMonth" :options="monthOptions"/>
+        <UInput v-model="selectedYear" type="number" class="w-20"/>
+      </div>
       <UButton @click="nextMonth">
         <Icon name="lucide:chevron-right"/>
       </UButton>
